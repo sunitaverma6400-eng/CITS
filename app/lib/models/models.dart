@@ -2,51 +2,47 @@ class Flashcard {
   final String id;
   final String term;
   final String definition;
-  int status; // 0 = new, 1 = still learning, 2 = got it
+  int status;
 
-  Flashcard({
-    required this.id,
-    required this.term,
-    required this.definition,
-    this.status = 0,
-  });
+  Flashcard({required this.id, required this.term, required this.definition, this.status = 0});
 
-  factory Flashcard.fromJson(Map<String, dynamic> json) {
-    return Flashcard(
-      id: json['id'],
-      term: json['term'],
-      definition: json['definition'],
-    );
+  static Flashcard? tryFromJson(Map<String, dynamic> json) {
+    final term = json['term'];
+    final definition = json['definition'];
+    if (term == null || definition == null) return null;
+    return Flashcard(id: (json['id'] ?? '').toString(), term: term.toString(), definition: definition.toString());
   }
 }
 
 class KeyConcept {
   final String term;
   final String explanation;
-
   KeyConcept({required this.term, required this.explanation});
-
-  factory KeyConcept.fromJson(Map<String, dynamic> json) {
-    return KeyConcept(
-      term: json['term'],
-      explanation: json['explanation'],
-    );
+  static KeyConcept? tryFromJson(Map<String, dynamic> json) {
+    final term = json['term'];
+    final explanation = json['explanation'];
+    if (term == null || explanation == null) return null;
+    return KeyConcept(term: term.toString(), explanation: explanation.toString());
   }
 }
 
 class StudyGuide {
   final String summary;
   final List<KeyConcept> keyConcepts;
-
   StudyGuide({required this.summary, required this.keyConcepts});
-
-  factory StudyGuide.fromJson(Map<String, dynamic> json) {
-    return StudyGuide(
-      summary: json['summary'],
-      keyConcepts: (json['keyConcepts'] as List)
-          .map((e) => KeyConcept.fromJson(e))
-          .toList(),
-    );
+  factory StudyGuide.fromJson(dynamic json) {
+    if (json is! Map<String, dynamic>) return StudyGuide(summary: '', keyConcepts: []);
+    final rawList = json['keyConcepts'];
+    final concepts = <KeyConcept>[];
+    if (rawList is List) {
+      for (final e in rawList) {
+        if (e is Map<String, dynamic>) {
+          final kc = KeyConcept.tryFromJson(e);
+          if (kc != null) concepts.add(kc);
+        }
+      }
+    }
+    return StudyGuide(summary: (json['summary'] ?? '').toString(), keyConcepts: concepts);
   }
 }
 
@@ -56,26 +52,29 @@ class Chapter {
   final StudyGuide studyGuide;
   final List<Flashcard> flashcards;
   final List<String> images;
+  Chapter({required this.id, required this.title, required this.studyGuide, required this.flashcards, this.images = const []});
 
-  Chapter({
-    required this.id,
-    required this.title,
-    required this.studyGuide,
-    required this.flashcards,
-    this.images = const [],
-  });
-
-  factory Chapter.fromJson(Map<String, dynamic> json) {
+  static Chapter? tryFromJson(Map<String, dynamic> json) {
+    final rawCards = json['flashcards'];
+    final cards = <Flashcard>[];
+    if (rawCards is List) {
+      for (final e in rawCards) {
+        if (e is Map<String, dynamic>) {
+          final fc = Flashcard.tryFromJson(e);
+          if (fc != null) cards.add(fc);
+        }
+      }
+    }
+    if (cards.isEmpty) return null;
+    List<String> images = const [];
+    final rawImages = json['images'];
+    if (rawImages is List) images = rawImages.map((e) => e.toString()).toList();
     return Chapter(
-      id: json['id'],
-      title: json['title'],
+      id: (json['id'] ?? '').toString(),
+      title: (json['title'] ?? 'Untitled').toString(),
       studyGuide: StudyGuide.fromJson(json['studyGuide']),
-      flashcards: (json['flashcards'] as List)
-          .map((e) => Flashcard.fromJson(e))
-          .toList(),
-      images: json['images'] != null
-          ? List<String>.from(json['images'])
-          : const [],
+      flashcards: cards,
+      images: images,
     );
   }
 }
@@ -84,15 +83,20 @@ class Subject {
   final String id;
   final String name;
   final List<Chapter> chapters;
-
   Subject({required this.id, required this.name, required this.chapters});
 
-  factory Subject.fromJson(Map<String, dynamic> json) {
-    return Subject(
-      id: json['id'],
-      name: json['name'],
-      chapters:
-          (json['chapters'] as List).map((e) => Chapter.fromJson(e)).toList(),
-    );
+  static Subject? tryFromJson(Map<String, dynamic> json) {
+    final rawChapters = json['chapters'];
+    final chapters = <Chapter>[];
+    if (rawChapters is List) {
+      for (final e in rawChapters) {
+        if (e is Map<String, dynamic>) {
+          final ch = Chapter.tryFromJson(e);
+          if (ch != null) chapters.add(ch);
+        }
+      }
+    }
+    if (chapters.isEmpty) return null;
+    return Subject(id: (json['id'] ?? '').toString(), name: (json['name'] ?? 'Untitled').toString(), chapters: chapters);
   }
 }
