@@ -5,6 +5,7 @@ import 'flashcard_screen.dart';
 import 'learn_screen.dart';
 import 'study_guide_screen.dart';
 import 'quiz_screen.dart';
+import 'read_screen.dart';
 
 class ChapterScreen extends StatelessWidget {
   final Chapter chapter;
@@ -18,28 +19,50 @@ class ChapterScreen extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
-        child: GridView.count(
-          crossAxisCount: 2,
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 16,
+        child: Column(
           children: [
-            _modeCard(context, 'Flashcards', Icons.style, Colors.indigo, () {
-              Navigator.push(context, MaterialPageRoute(
-                  builder: (_) => FlashcardScreen(chapter: chapter)));
-            }),
-            _modeCard(context, 'Learn Mode', Icons.school, Colors.teal, () {
-              Navigator.push(context, MaterialPageRoute(
-                  builder: (_) => LearnScreen(chapter: chapter)));
-            }),
-            _modeCard(context, 'Study Guide', Icons.menu_book, Colors.orange,
-                () {
-              Navigator.push(context, MaterialPageRoute(
-                  builder: (_) => StudyGuideScreen(chapter: chapter)));
-            }),
-            _modeCard(context, 'Quiz', Icons.quiz, Colors.pink, () {
-              Navigator.push(context, MaterialPageRoute(
-                  builder: (_) => QuizScreen(chapter: chapter)));
-            }),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16)),
+                icon: const Icon(Icons.menu_book_outlined),
+                label: Text('Poora Chapter Padhein (Read)',
+                    style: GoogleFonts.notoSansDevanagari(
+                        fontWeight: FontWeight.w600)),
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(
+                      builder: (_) => ReadScreen(chapter: chapter)));
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: GridView.count(
+                crossAxisCount: 2,
+                mainAxisSpacing: 16,
+                crossAxisSpacing: 16,
+                children: [
+                  _modeCard(context, 'Flashcards', Icons.style, Colors.indigo, () {
+                    Navigator.push(context, MaterialPageRoute(
+                        builder: (_) => FlashcardScreen(chapter: chapter)));
+                  }),
+                  _modeCard(context, 'Learn Mode', Icons.school, Colors.teal, () {
+                    Navigator.push(context, MaterialPageRoute(
+                        builder: (_) => LearnScreen(chapter: chapter)));
+                  }),
+                  _modeCard(context, 'Study Guide', Icons.menu_book, Colors.orange,
+                      () {
+                    Navigator.push(context, MaterialPageRoute(
+                        builder: (_) => StudyGuideScreen(chapter: chapter)));
+                  }),
+                  _modeCard(context, 'Quiz', Icons.quiz, Colors.pink, () {
+                    Navigator.push(context, MaterialPageRoute(
+                        builder: (_) => QuizScreen(chapter: chapter)));
+                  }),
+                ],
+              ),
+            ),
           ],
         ),
       ),

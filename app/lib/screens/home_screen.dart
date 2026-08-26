@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../models/models.dart';
 import 'chapter_screen.dart';
 
+// Runs on a background isolate so parsing a large JSON file doesn't
+// freeze the UI thread (this is what looked like "buffering").
 List<Subject> _parseSubjects(String raw) {
   final data = json.decode(raw);
   final subjects = <Subject>[];
@@ -23,6 +25,7 @@ List<Subject> _parseSubjects(String raw) {
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -40,7 +43,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadData() async {
     try {
-      final raw = await rootBundle.loadString('assets/data/flashcards_data.json');
+      final raw =
+          await rootBundle.loadString('assets/data/flashcards_data.json');
       final parsed = await compute(_parseSubjects, raw);
       if (!mounted) return;
       setState(() {
@@ -59,7 +63,10 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Draughtsman Mechanical', style: GoogleFonts.notoSansDevanagari(fontWeight: FontWeight.bold))),
+      appBar: AppBar(
+        title: Text('Draughtsman Mechanical',
+            style: GoogleFonts.notoSansDevanagari(fontWeight: FontWeight.bold)),
+      ),
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : error != null
@@ -69,13 +76,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                        const Icon(Icons.error_outline,
+                            size: 48, color: Colors.red),
                         const SizedBox(height: 12),
-                        Text('Data load nahi ho paya:\n$error', textAlign: TextAlign.center),
+                        Text('Data load nahi ho paya:\n$error',
+                            textAlign: TextAlign.center),
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: () {
-                            setState(() { loading = true; error = null; });
+                            setState(() {
+                              loading = true;
+                              error = null;
+                            });
                             _loadData();
                           },
                           child: const Text('Retry'),
@@ -94,14 +106,25 @@ class _HomeScreenState extends State<HomeScreen> {
                         return Card(
                           margin: const EdgeInsets.only(bottom: 12),
                           child: ExpansionTile(
-                            title: Text(subject.name, style: GoogleFonts.notoSansDevanagari(fontSize: 18, fontWeight: FontWeight.w600)),
+                            title: Text(subject.name,
+                                style: GoogleFonts.notoSansDevanagari(
+                                    fontSize: 18, fontWeight: FontWeight.w600)),
                             children: subject.chapters
                                 .map((ch) => ListTile(
-                                      title: Text(ch.title, style: GoogleFonts.notoSansDevanagari()),
-                                      subtitle: Text('${ch.flashcards.length} cards'),
+                                      title: Text(ch.title,
+                                          style:
+                                              GoogleFonts.notoSansDevanagari()),
+                                      subtitle:
+                                          Text('${ch.flashcards.length} cards'),
                                       trailing: const Icon(Icons.chevron_right),
                                       onTap: () {
-                                        Navigator.push(context, MaterialPageRoute(builder: (_) => ChapterScreen(chapter: ch)));
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                ChapterScreen(chapter: ch),
+                                          ),
+                                        );
                                       },
                                     ))
                                 .toList(),
